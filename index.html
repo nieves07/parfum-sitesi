@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AURELIS — Nuit d'Ambre</title>
+<meta name="description" content="Nuit d'Ambre: safran, Şam gülü ve amberin gece yarısı buluşması.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0908;
+    --ink: #f3ebdd;
+    --muted: #a99d8a;
+    --gold: #d8b06a;
+    --gold-soft: rgba(216, 176, 106, .28);
+    --serif: "Cormorant Garamond", "Times New Roman", serif;
+    --sans: "Jost", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: var(--bg); }
+  body {
+    font-family: var(--sans);
+    font-weight: 300;
+    color: var(--ink);
+    background: var(--bg);
+    overflow-x: clip;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  /* ---------- sabit katmanlar ---------- */
+  #stage { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; }
+  .grain {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: .035;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  .vignette {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,.55) 100%);
+  }
+  header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 26px clamp(20px, 5vw, 64px);
+    font-size: 12px; letter-spacing: .28em; text-transform: uppercase;
+  }
+  .brand { font-family: var(--serif); font-size: 22px; letter-spacing: .42em; font-weight: 400; }
+  nav { display: flex; gap: 34px; color: var(--muted); }
+  nav a { transition: color .3s; }
+  nav a:hover { color: var(--gold); }
+  .progress {
+    position: fixed; top: 0; left: 0; height: 2px; width: 100%; z-index: 11;
+    background: linear-gradient(90deg, var(--gold), #f5dca8);
+    transform-origin: 0 50%; transform: scaleX(0);
+  }
+  .rail {
+    position: fixed; right: clamp(14px, 3vw, 40px); top: 50%; transform: translateY(-50%);
+    z-index: 10; display: flex; flex-direction: column; gap: 16px; align-items: flex-end;
+  }
+  .rail a { display: flex; align-items: center; gap: 12px; font-size: 10px; letter-spacing: .25em; text-transform: uppercase; color: transparent; transition: color .4s; }
+  .rail a::after { content: ""; width: 18px; height: 1px; background: var(--muted); opacity: .5; transition: width .4s, background .4s, opacity .4s; }
+  .rail a.on { color: var(--gold); }
+  .rail a.on::after { width: 38px; background: var(--gold); opacity: 1; }
+
+  /* ---------- bölümler ---------- */
+  main { position: relative; z-index: 2; }
+  section { height: 170vh; position: relative; }
+  section:last-of-type { height: 100vh; }
+  .pin {
+    position: sticky; top: 0; height: 100vh;
+    display: flex; align-items: center;
+    padding: 0 clamp(24px, 8vw, 130px);
+  }
+  .copy { max-width: 440px; }
+  .right .pin { justify-content: flex-end; }
+  .center .pin { justify-content: center; text-align: center; align-items: flex-end; padding-bottom: 9vh; }
+  .center .copy { max-width: 720px; }
+
+  .eyebrow { font-size: 11px; letter-spacing: .42em; text-transform: uppercase; color: var(--gold); margin-bottom: 22px; display: flex; align-items: center; gap: 14px; }
+  .eyebrow::before { content: ""; width: 34px; height: 1px; background: var(--gold); }
+  .center .eyebrow { justify-content: center; }
+  .center .eyebrow::after { content: ""; width: 34px; height: 1px; background: var(--gold); }
+  h1, h2 { font-family: var(--serif); font-weight: 300; line-height: 1.02; letter-spacing: -.01em; }
+  h1 { font-size: clamp(54px, 9vw, 132px); }
+  h2 { font-size: clamp(40px, 5.2vw, 76px); }
+  h1 em, h2 em { font-style: italic; color: var(--gold); }
+  p.lead { margin-top: 26px; font-size: 16px; line-height: 1.75; color: var(--muted); }
+  .specs { margin-top: 34px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px 28px; border-top: 1px solid var(--gold-soft); padding-top: 24px; }
+  .specs dt { font-size: 10px; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .specs dd { font-family: var(--serif); font-size: 24px; }
+
+  /* hero */
+  .hero .pin { align-items: stretch; justify-content: center; padding-top: 16vh; padding-bottom: 6vh; text-align: center; }
+  .hero .copy { max-width: none; display: flex; flex-direction: column; justify-content: space-between; align-items: center; width: 100%; }
+  .hero h1 { letter-spacing: .14em; white-space: nowrap; font-size: clamp(30px, 8.6vw, 170px); color: rgba(243,235,221,.92); }
+  .hero .sub { font-family: var(--serif); font-style: italic; font-size: clamp(20px, 2.4vw, 30px); color: var(--gold); margin-top: 6px; }
+  .scroll-hint { font-size: 10px; letter-spacing: .4em; text-transform: uppercase; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .scroll-hint i { width: 1px; height: 46px; background: linear-gradient(var(--gold), transparent); animation: drip 2s ease-in-out infinite; transform-origin: top; }
+  @keyframes drip { 0% { transform: scaleY(0); } 50% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
+
+  /* notalar */
+  .notes .copy { max-width: 500px; }
+  .tier { display: grid; grid-template-columns: 64px 1fr; gap: 20px; padding: 20px 0; border-top: 1px solid var(--gold-soft); }
+  .tier:first-of-type { margin-top: 30px; }
+  .tier .num { font-family: var(--serif); font-style: italic; font-size: 38px; color: var(--gold); line-height: 1; }
+  .tier h3 { font-family: var(--serif); font-weight: 400; font-size: 26px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .tier h3 span { font-family: var(--sans); font-size: 10px; letter-spacing: .25em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  .chips { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips li { list-style: none; font-size: 12px; letter-spacing: .12em; padding: 7px 14px; border: 1px solid var(--gold-soft); border-radius: 100px; background: rgba(30,22,14,.7); display: flex; align-items: center; gap: 8px; }
+  .chips li::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--c, var(--gold)); box-shadow: 0 0 10px var(--c, var(--gold)); }
+
+  /* cta */
+  .price { font-family: var(--serif); font-size: 28px; margin-top: 18px; color: var(--ink); }
+  .price small { font-family: var(--sans); font-size: 11px; letter-spacing: .25em; color: var(--muted); margin-left: 10px; text-transform: uppercase; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 14px; margin-top: 26px;
+    padding: 18px 44px; border: 1px solid var(--gold); border-radius: 100px;
+    font-family: var(--sans); font-size: 12px; letter-spacing: .32em; text-transform: uppercase; color: var(--bg);
+    background: linear-gradient(120deg, #f1d59c, var(--gold) 55%, #b98c45);
+    cursor: pointer; transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s;
+  }
+  .btn:hover { transform: translateY(-3px); box-shadow: 0 16px 40px -12px rgba(216,176,106,.7); }
+  .btn:focus-visible, a:focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; }
+  footer { position: absolute; bottom: 18px; left: 0; right: 0; text-align: center; font-size: 10px; letter-spacing: .3em; color: rgba(169,157,138,.6); text-transform: uppercase; }
+
+  /* ---------- metin girişleri ---------- */
+  .r { opacity: 0; transform: translateY(34px); transition: opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1); transition-delay: 0s; }
+  .is-active .r { opacity: 1; transform: none; transition-delay: calc(var(--i, 0) * 110ms + 80ms); }
+
+  /* ---------- yükleme ---------- */
+  .loader { position: fixed; inset: 0; z-index: 50; background: var(--bg); display: grid; place-items: center; transition: opacity 1s .2s, visibility 1s .2s; }
+  .loader span { font-family: var(--serif); letter-spacing: .6em; font-size: 20px; color: var(--gold); animation: pulse 1.6s ease-in-out infinite; padding-left: .6em; }
+  @keyframes pulse { 50% { opacity: .3; } }
+  body.ready .loader { opacity: 0; visibility: hidden; }
+
+  @media (max-width: 1150px) { .rail { display: none; } }
+  /* ---------- mobil ---------- */
+  @media (max-width: 820px) {
+    nav, .rail { display: none; }
+    header { padding: 20px; }
+    .pin, .right .pin { align-items: flex-end; justify-content: flex-start; padding: 0 22px 6vh; }
+    .copy { max-width: none; width: 100%; }
+    .hero .pin { align-items: stretch; padding-top: 13vh; }
+    h2 { font-size: 38px; }
+    p.lead { font-size: 14px; margin-top: 14px; line-height: 1.6; }
+    .specs { margin-top: 18px; padding-top: 16px; gap: 12px 20px; }
+    .specs dd { font-size: 20px; }
+    .tier { grid-template-columns: 40px 1fr; gap: 12px; padding: 12px 0; }
+    .tier:first-of-type { margin-top: 14px; }
+    .tier .num { font-size: 26px; }
+    .tier h3 { font-size: 20px; }
+    .chips { margin-top: 8px; gap: 6px; }
+    .chips li { font-size: 11px; padding: 5px 10px; }
+    .center .pin { justify-content: center; padding-bottom: 8vh; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .r { transition-duration: .01s; filter: none; transform: none; }
+    .scroll-hint i { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="loader"><span>AURELIS</span></div>
+<div class="progress"></div>
+<canvas id="stage" aria-hidden="true"></canvas>
+<div class="vignette"></div>
+<div class="grain"></div>
+
+<header>
+  <a class="brand" href="#hero">AURELIS</a>
+  <nav>
+    <a href="#tasarim">Tasarım</a>
+    <a href="#notalar">Notalar</a>
+    <a href="#satin-al">Satın Al</a>
+  </nav>
+</header>
+
+<div class="rail" aria-hidden="true">
+  <a href="#hero">Giriş</a>
+  <a href="#kapak">Kapak</a>
+  <a href="#tasarim">Tasarım</a>
+  <a href="#sprey">İlk Sıkım</a>
+  <a href="#notalar">Notalar</a>
+  <a href="#satin-al">Satın Al</a>
+</div>
+
+<main>
+  <section id="hero" class="hero">
+    <div class="pin">
+      <div class="copy">
+        <div>
+          <h1 class="r">NUIT D'AMBRE</h1>
+          <p class="sub r" style="--i:1">gece yarısının kokusu</p>
+        </div>
+        <div class="scroll-hint r" style="--i:3"><span>Kaydır</span><i></i></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="kapak">
+    <div class="pin">
+      <div class="copy">
+        <div class="eyebrow r">01 — Ritüel</div>
+        <h2 class="r" style="--i:1">Kapağı <em>arala.</em></h2>
+        <p class="lead r" style="--i:2">Siyah lake kapak, mıknatıslı yuvasından hafif bir tıkırtıyla ayrılır. İçeride bekleyen şey bir koku değil; yavaş yavaş açılan bir gece.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="tasarim" class="right">
+    <div class="pin">
+      <div class="copy">
+        <div class="eyebrow r">02 — Tasarım</div>
+        <h2 class="r" style="--i:1">Her açıdan <em>ışık.</em></h2>
+        <p class="lead r" style="--i:2">Elde üflenmiş kalın tabanlı cam, altın varaklı yaka ve kehribar rengi öz. Şişe döndükçe ışık içinden geçer, hiçbir yüzü aynı görünmez.</p>
+        <dl class="specs r" style="--i:3">
+          <div><dt>Hacim</dt><dd>50 ml</dd></div>
+          <div><dt>Yoğunluk</dt><dd>Extrait · %28</dd></div>
+          <div><dt>Kalıcılık</dt><dd>12+ saat</dd></div>
+          <div><dt>Üretim</dt><dd>Grasse, FR</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section id="sprey" class="right">
+    <div class="pin">
+      <div class="copy">
+        <div class="eyebrow r">03 — İlk Sıkım</div>
+        <h2 class="r" style="--i:1">Tek <em>dokunuş.</em></h2>
+        <p class="lead r" style="--i:2">Mikro atomizer, özü pudra inceliğinde bir buluta çevirir. Tene değdiği an safranın sıcaklığı yükselir, ardından gül ve tütsü sahneye girer.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="notalar" class="notes">
+    <div class="pin">
+      <div class="copy">
+        <div class="eyebrow r">04 — Koku Piramidi</div>
+        <h2 class="r" style="--i:1">Üç perdelik <em>gece.</em></h2>
+        <div class="tier r" style="--i:2">
+          <div class="num">i.</div>
+          <div>
+            <h3>Üst notalar <span>0 – 15 dk</span></h3>
+            <ul class="chips">
+              <li style="--c:#e9d35b">Bergamot</li><li style="--c:#e77a8c">Pembe Biber</li><li style="--c:#e8632a">Safran</li>
+            </ul>
+          </div>
+        </div>
+        <div class="tier r" style="--i:3">
+          <div class="num">ii.</div>
+          <div>
+            <h3>Kalp notaları <span>15 dk – 4 sa</span></h3>
+            <ul class="chips">
+              <li style="--c:#c93a5e">Şam Gülü</li><li style="--c:#f4ecd2">Yasemin</li><li style="--c:#9d8f84">Tütsü</li>
+            </ul>
+          </div>
+        </div>
+        <div class="tier r" style="--i:4">
+          <div class="num">iii.</div>
+          <div>
+            <h3>Dip notalar <span>4 sa +</span></h3>
+            <ul class="chips">
+              <li style="--c:#d98a2b">Amber</li><li style="--c:#6b4226">Ud Ağacı</li><li style="--c:#f0dcae">Vanilya</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="satin-al" class="center">
+    <div class="pin">
+      <div class="copy">
+        <div class="eyebrow r">Nuit d'Ambre</div>
+        <h2 class="r" style="--i:1">Geceyi <em>üzerinde taşı.</em></h2>
+        <p class="price r" style="--i:2">₺ 4.850 <small>50 ml · Extrait de Parfum</small></p>
+        <a class="btn r" style="--i:3" href="#satin-al" role="button">Sepete Ekle <span aria-hidden="true">→</span></a>
+      </div>
+      <footer>© 2026 Aurelis Parfums — Konsept site</footer>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from "three";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+
+gsap.registerPlugin(ScrollTrigger);
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ================= sahne ================= */
+const canvas = document.getElementById("stage");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0b0908);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 60);
+camera.position.set(0, 0, 9);
+
+const key = new THREE.DirectionalLight(0xffe2b0, 2.2); key.position.set(3, 4, 5); scene.add(key);
+const rim = new THREE.PointLight(0xd8a050, 40, 20); rim.position.set(-3.5, 1.5, -2.5); scene.add(rim);
+const fill = new THREE.PointLight(0x8a5cff, 10, 20); fill.position.set(4, -2, -3); scene.add(fill);
+
+/* arka ışıltı */
+function radialTexture(stops) {
+  const c = document.createElement("canvas"); c.width = c.height = 256;
+  const g = c.getContext("2d"); const gr = g.createRadialGradient(128, 128, 0, 128, 128, 128);
+  stops.forEach(([o, col]) => gr.addColorStop(o, col));
+  g.fillStyle = gr; g.fillRect(0, 0, 256, 256);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+const glow = new THREE.Mesh(
+  new THREE.PlaneGeometry(11, 11),
+  new THREE.MeshBasicMaterial({
+    map: radialTexture([[0, "rgba(216,150,70,.55)"], [0.35, "rgba(160,90,40,.18)"], [1, "rgba(0,0,0,0)"]]),
+    transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false
+  })
+);
+glow.position.z = -3; scene.add(glow);
+
+/* ================= şişe ================= */
+const bottle = new THREE.Group(); scene.add(bottle);
+const gold = new THREE.MeshStandardMaterial({ color: 0xd9b064, metalness: 1, roughness: 0.22 });
+const lacquer = new THREE.MeshPhysicalMaterial({ color: 0x0c0b0b, metalness: 0.2, roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.05 });
+
+/* füme (siyah şeffaf) cam: pahalı transmission yerine iki katmanlı saydam cam */
+const glassGeo = new RoundedBoxGeometry(1.5, 2.0, 0.72, 6, 0.14);
+const glassBack = new THREE.Mesh(glassGeo, new THREE.MeshStandardMaterial({
+  color: 0x050506, transparent: true, opacity: 0.55, roughness: 0.2, metalness: 0, side: THREE.BackSide, depthWrite: false
+}));
+glassBack.renderOrder = 1; bottle.add(glassBack);
+const glass = new THREE.Mesh(glassGeo, new THREE.MeshPhysicalMaterial({
+  color: 0x08080a, transparent: true, opacity: 0.46, roughness: 0.03, metalness: 0,
+  clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.7, depthWrite: false
+}));
+glass.renderOrder = 3; bottle.add(glass);
+
+/* sıvı: dolum çizgisinin üstü kesilir, çizgi şişe hareketine göre çalkalanır */
+const liquidMat = new THREE.ShaderMaterial({
+  side: THREE.DoubleSide,
+  uniforms: {
+    uUp: { value: new THREE.Vector3(0, 1, 0) }, uFill: { value: 0.4 }, uWob: { value: new THREE.Vector2() }, uTime: { value: 0 },
+    uDeep: { value: new THREE.Color(0x6e1a00) }, uBright: { value: new THREE.Color(0xff7200) }, uTop: { value: new THREE.Color(0xff9a26) }
+  },
+  vertexShader: `varying vec3 vPos; varying vec3 vN; varying vec3 vV;
+    void main(){ vPos = position; vec4 mv = modelViewMatrix * vec4(position,1.); vN = normalMatrix * normal; vV = -mv.xyz; gl_Position = projectionMatrix * mv; }`,
+  fragmentShader: `uniform vec3 uUp, uDeep, uBright, uTop; uniform float uFill, uTime; uniform vec2 uWob;
+    varying vec3 vPos; varying vec3 vN; varying vec3 vV;
+    void main(){
+      float h = dot(vPos, uUp);
+      float line = uFill + uWob.x * vPos.x + uWob.y * vPos.z
+        + .014 * sin(vPos.x * 9. + uTime * 2.1) + .01 * sin(vPos.z * 13. - uTime * 2.7);
+      if (h > line) discard;
+      vec3 col;
+      if (!gl_FrontFacing) { col = uTop; }
+      else {
+        float d = line - h;
+        col = mix(uBright, uDeep, smoothstep(0., 1.5, d));
+        float fres = pow(1. - abs(dot(normalize(vN), normalize(vV))), 2.5);
+        col += uTop * fres * .45;
+        col = mix(col, uTop, smoothstep(.035, 0., d) * .7);
+      }
+      gl_FragColor = vec4(col * 1.15, 1.);
+      #include <tonemapping_fragment>
+      #include <colorspace_fragment>
+    }`
+});
+const liquid = new THREE.Mesh(new RoundedBoxGeometry(1.3, 1.72, 0.52, 5, 0.1), liquidMat);
+liquid.position.y = -0.02; liquid.renderOrder = 2; bottle.add(liquid);
+
+const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 1.75, 8), new THREE.MeshStandardMaterial({ color: 0xfff2dc, roughness: 0.4, transparent: true, opacity: 0.55 }));
+tube.position.y = 0.05; bottle.add(tube);
+
+const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.27, 0.16, 48), gold); collar.position.y = 1.07; bottle.add(collar);
+const ring = new THREE.Mesh(new THREE.TorusGeometry(0.265, 0.02, 12, 48), gold); ring.rotation.x = Math.PI / 2; ring.position.y = 1.0; bottle.add(ring);
+
+const pump = new THREE.Group(); bottle.add(pump);
+const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.22, 24), gold); stem.position.y = 1.24; pump.add(stem);
+const head = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.17, 40), gold); head.position.y = 1.4; pump.add(head);
+const hole = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.02, 16), new THREE.MeshBasicMaterial({ color: 0x120c06 }));
+hole.rotation.z = Math.PI / 2; hole.position.set(0.171, 1.41, 0); pump.add(hole);
+
+const cap = new THREE.Group(); bottle.add(cap);
+const capBody = new THREE.Mesh(new RoundedBoxGeometry(0.78, 0.82, 0.62, 6, 0.07), lacquer); capBody.position.y = 1.42; cap.add(capBody);
+const capBand = new THREE.Mesh(new RoundedBoxGeometry(0.8, 0.06, 0.64, 4, 0.02), gold); capBand.position.y = 1.06; cap.add(capBand);
+
+/* etiket */
+const label = new THREE.Mesh(
+  new THREE.PlaneGeometry(1.08, 1.08),
+  new THREE.MeshBasicMaterial({ color: 0xf3dba6, transparent: true, depthWrite: false })
+);
+label.renderOrder = 4;
+label.position.set(0, -0.12, 0.365); bottle.add(label);
+async function drawLabel() {
+  try { await Promise.all([document.fonts.load("400 90px 'Cormorant Garamond'"), document.fonts.load("italic 300 60px 'Cormorant Garamond'"), document.fonts.load("400 30px Jost")]); } catch (e) {}
+  const c = document.createElement("canvas"); c.width = c.height = 1024; const g = c.getContext("2d");
+  g.strokeStyle = g.fillStyle = "#fff"; g.textAlign = "center"; g.textBaseline = "middle";
+  g.lineWidth = 3; g.strokeRect(150, 250, 724, 524);
+  g.lineWidth = 1.5; g.strokeRect(166, 266, 692, 492);
+  const spaced = (txt, y, font, sp) => {
+    g.font = font; const w = [...txt].reduce((a, ch) => a + g.measureText(ch).width + sp, -sp); let x = 512 - w / 2;
+    g.textAlign = "left"; for (const ch of txt) { g.fillText(ch, x, y); x += g.measureText(ch).width + sp; } g.textAlign = "center";
+  };
+  spaced("AURELIS", 400, "400 96px 'Cormorant Garamond', serif", 26);
+  g.fillRect(452, 478, 120, 2);
+  g.font = "italic 300 64px 'Cormorant Garamond', serif"; g.fillText("Nuit d'Ambre", 512, 550);
+  spaced("EXTRAIT DE PARFUM · 50 ML", 670, "400 26px Jost, sans-serif", 7);
+  const t = new THREE.CanvasTexture(c); t.anisotropy = 8;
+  label.material.map = t; label.material.alphaMap = t; label.material.needsUpdate = true;
+}
+label.material.opacity = 0; drawLabel().then(() => { label.material.opacity = 1; });
+
+/* ================= parçacıklar ================= */
+const pointShader = (color) => new THREE.ShaderMaterial({
+  transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+  uniforms: { uColor: { value: new THREE.Color(color) }, uScale: { value: 1 } },
+  vertexShader: `attribute float aAlpha; attribute float aSize; varying float vA; uniform float uScale;
+    void main(){ vA = aAlpha; vec4 mv = modelViewMatrix * vec4(position,1.); gl_PointSize = aSize * uScale / -mv.z; gl_Position = projectionMatrix * mv; }`,
+  fragmentShader: `uniform vec3 uColor; varying float vA;
+    void main(){ float d = length(gl_PointCoord - .5); float a = smoothstep(.5, 0., d); gl_FragColor = vec4(uColor, a * a * vA); }`
+});
+function makePoints(n, color) {
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(n * 3), 3));
+  geo.setAttribute("aAlpha", new THREE.BufferAttribute(new Float32Array(n), 1));
+  geo.setAttribute("aSize", new THREE.BufferAttribute(new Float32Array(n), 1));
+  const pts = new THREE.Points(geo, pointShader(color)); pts.frustumCulled = false; scene.add(pts); return pts;
+}
+const rnd = (a, b) => a + Math.random() * (b - a);
+
+const MIST = 1500;
+const mist = makePoints(MIST, 0xffe2b4);
+const mistSeed = Array.from({ length: MIST }, () => {
+  const spread = Math.pow(Math.random(), 0.7) * 0.42, phi = rnd(0, Math.PI * 2);
+  const puff = Math.random() < 0.14;
+  return { d: rnd(0, 0.4), dy: Math.sin(phi) * Math.tan(spread), dz: Math.cos(phi) * Math.tan(spread), sp: rnd(2.2, 6.2), sz: puff ? rnd(3, 6) : rnd(0.15, 0.7), al: puff ? 0.07 : 1, s: rnd(0, 100) };
+});
+
+const DUST = 260;
+const dust = makePoints(DUST, 0xf2c878);
+const dustSeed = Array.from({ length: DUST }, () => ({ x: rnd(-6, 6), y: rnd(-3.4, 3.4), z: rnd(-3, 2.5), sz: rnd(0.12, 0.5), s: rnd(0, 100) }));
+
+/* ================= scroll ile sürülen durum ================= */
+const S = { capY: 0, capX: 0, capRz: 0, rotY: 0.35, tiltX: 0.06, tiltZ: -0.05, posX: 0, posY: -0.55, scale: 0.88, pump: 0, spray: 0, dust: 0.25, glow: 1 };
+const TAU = Math.PI * 2;
+const bg = (hex) => { const c = new THREE.Color(hex); return { r: c.r, g: c.g, b: c.b }; };
+
+/* Her bölüm 170vh: ilk ~%30'unda metin sabit durur (HOLD), kalanında geçiş oynar (MOVE). */
+const SEG = 1.7, HOLD = 0.5, MOVE = SEG - HOLD;
+const tl = gsap.timeline();
+const seg = (i, build) => {
+  const t = gsap.timeline({ defaults: { ease: "power2.inOut" } });
+  build(t); t.timeScale(1 / MOVE); tl.add(t, i * SEG + HOLD);
+};
+// 0 → 1 : kapak açılır
+seg(0, (t) => t
+  .to(S, { capY: 1.25, duration: 0.5, ease: "power2.out" }, 0.05)
+  .to(S, { capX: -0.95, capRz: 0.55, duration: 0.5 }, 0.5)
+  .to(S, { posX: 1, posY: 0, scale: 1, rotY: -0.45, tiltZ: 0.04, duration: 1 }, 0)
+  .to(scene.background, { ...bg(0x120b07), duration: 1 }, 0));
+// 1 → 2 : kapak uzaklaşır, şişe tam tur döner
+seg(1, (t) => t
+  .to(S, { capY: 6.5, capRz: 1.6, duration: 0.6, ease: "power2.in" }, 0)
+  .to(S, { posX: -1, rotY: TAU + 0.5, tiltX: 0.12, scale: 1.08, duration: 1 }, 0)
+  .to(scene.background, { ...bg(0x0d0a12), duration: 1 }, 0));
+// 2 → 3 : pompa basılır, sprey
+seg(2, (t) => t
+  .to(S, { rotY: TAU, tiltX: 0.02, tiltZ: 0, duration: 0.3 }, 0)
+  .to(S, { pump: 1, duration: 0.08, ease: "power3.in" }, 0.2)
+  .to(S, { spray: 1, duration: 1.0, ease: "none" }, 0.22)
+  .to(S, { pump: 0, duration: 0.2, ease: "back.out(2.5)" }, 0.5)
+  .to(scene.background, { ...bg(0x150a08), duration: 1 }, 0));
+// 3 → 4 : notalar
+seg(3, (t) => t
+  .to(S, { posX: 1, rotY: TAU - 0.55, tiltX: 0.08, dust: 1, scale: 1.02, duration: 0.85 }, 0.15)
+  .to(scene.background, { ...bg(0x100806), duration: 1 }, 0));
+// 4 → 5 : kapak kapanır, final
+seg(4, (t) => t
+  .set(S, { capX: 0, capRz: 0 }, 0)
+  .to(S, { posX: 0, posY: 0.42, rotY: TAU * 2 + 0.3, tiltX: 0.05, tiltZ: -0.04, scale: 0.92, dust: 0.6, duration: 1 }, 0)
+  .to(S, { capY: 0, duration: 0.5, ease: "power3.out" }, 0.5)
+  .to(scene.background, { ...bg(0x0b0908), duration: 1 }, 0));
+
+ScrollTrigger.create({ animation: tl, trigger: "main", start: "top top", end: "bottom bottom", scrub: reduceMotion ? true : 0.8 });
+gsap.to(".progress", { scaleX: 1, ease: "none", scrollTrigger: { trigger: "main", start: "top top", end: "bottom bottom", scrub: true } });
+
+const railLinks = [...document.querySelectorAll(".rail a")];
+document.querySelectorAll("main section").forEach((sec, i) => {
+  ScrollTrigger.create({
+    trigger: sec, start: "top 30%", end: "bottom 97%",
+    toggleClass: { targets: sec, className: "is-active" },
+    onToggle: (self) => railLinks[i] && railLinks[i].classList.toggle("on", self.isActive)
+  });
+});
+
+/* yumuşak kaydırma */
+let lenis = null;
+if (!reduceMotion && window.Lenis) {
+  lenis = new Lenis({ duration: 1.15, smoothWheel: true });
+  lenis.on("scroll", ScrollTrigger.update);
+  gsap.ticker.add((t) => lenis.raf(t * 1000));
+  gsap.ticker.lagSmoothing(0);
+}
+document.querySelectorAll('a[href^="#"]').forEach((a) => a.addEventListener("click", (e) => {
+  const el = document.querySelector(a.getAttribute("href")); if (!el) return;
+  e.preventDefault();
+  lenis ? lenis.scrollTo(el, { duration: 1.8 }) : el.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" });
+}));
+
+/* ================= render ================= */
+let side = 1.75, baseScale = 1, yShift = -0.15, mobile = false;
+function resize() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+  mobile = w / h < 0.9;
+  const halfW = Math.tan(THREE.MathUtils.degToRad(17.5)) * 9 * camera.aspect;
+  side = mobile ? 0 : Math.min(1.9, halfW * 0.48);
+  baseScale = mobile ? 0.7 : Math.min(1, 0.62 + camera.aspect * 0.24);
+  yShift = mobile ? 0.85 : -0.15;
+  const ps = h * renderer.getPixelRatio() * 0.5;
+  mist.material.uniforms.uScale.value = ps; dust.material.uniforms.uScale.value = ps;
+}
+addEventListener("resize", resize); resize();
+
+const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
+addEventListener("pointermove", (e) => { pointer.tx = e.clientX / innerWidth - 0.5; pointer.ty = e.clientY / innerHeight - 0.5; });
+
+const nozzle = new THREE.Vector3(), dir = new THREE.Vector3(), up = new THREE.Vector3(), fwd = new THREE.Vector3();
+const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+const clock = new THREE.Clock();
+const slosh = { t: 0, x: 0, r: 0.35, ax: 0, az: 0 }, qInv = new THREE.Quaternion();
+
+function frame() {
+  const time = reduceMotion ? 0 : clock.getElapsedTime();
+  pointer.x += (pointer.tx - pointer.x) * 0.05; pointer.y += (pointer.ty - pointer.y) * 0.05;
+
+  const s = baseScale * S.scale;
+  bottle.scale.setScalar(s);
+  bottle.position.set(S.posX * side, yShift + (mobile ? 0 : S.posY) + Math.sin(time * 0.9) * 0.05, 0);
+  bottle.rotation.set(S.tiltX + pointer.y * 0.18 + Math.sin(time * 0.6) * 0.015, S.rotY + pointer.x * 0.3, S.tiltZ);
+  cap.position.set(S.capX, S.capY, 0); cap.rotation.z = S.capRz;
+  cap.visible = S.capY < 6;
+  pump.position.y = -S.pump * 0.07;
+
+  /* sıvı çalkalanması: şişenin hızından beslenen sönümlü yay */
+  const dt = Math.min(0.05, Math.max(0.001, time - slosh.t)); slosh.t = time;
+  const vx = (bottle.position.x - slosh.x) / dt, vr = (bottle.rotation.y - slosh.r) / dt;
+  slosh.x = bottle.position.x; slosh.r = bottle.rotation.y;
+  const damp = Math.exp(-dt * 1.1);
+  slosh.ax = THREE.MathUtils.clamp(slosh.ax * damp + (vx * 0.22 + vr * 0.05 + S.pump * 0.6) * dt * 5, -0.4, 0.4);
+  slosh.az = THREE.MathUtils.clamp(slosh.az * damp + vr * 0.07 * dt * 5, -0.5, 0.5);
+  liquidMat.uniforms.uWob.value.set(slosh.ax * Math.sin(time * 5.2) + 0.035 * Math.sin(time * 1.3), slosh.az * Math.cos(time * 4.6) + 0.05 * Math.sin(time * 1.7));
+  liquidMat.uniforms.uTime.value = time;
+  liquidMat.uniforms.uUp.value.set(0, 1, 0).applyQuaternion(qInv.copy(bottle.quaternion).invert());
+  glow.position.set(bottle.position.x * 0.85, bottle.position.y, -3);
+  glow.material.opacity = 0.8 + Math.sin(time * 0.7) * 0.08;
+
+  /* sprey: scroll ilerlemesinin deterministik fonksiyonu */
+  bottle.updateMatrixWorld();
+  nozzle.set(0.19, 1.41 - S.pump * 0.07, 0); bottle.localToWorld(nozzle);
+  dir.set(1, mobile ? 0.35 : 0.12, 0).applyQuaternion(bottle.quaternion).normalize();
+  up.set(0, 1, 0); fwd.crossVectors(dir, up).normalize(); up.crossVectors(fwd, dir).normalize();
+  const mp = mist.geometry.attributes.position.array, ma = mist.geometry.attributes.aAlpha.array, ms = mist.geometry.attributes.aSize.array;
+  const p = S.spray;
+  mist.visible = p > 0.001 && p < 0.999;
+  if (mist.visible) for (let i = 0; i < MIST; i++) {
+    const q = mistSeed[i];
+    const t = Math.min(1, Math.max(0, p * 1.4 - q.d));
+    const dist = q.sp * (1 - Math.pow(1 - t, 3)) * (mobile ? 0.55 : 1);
+    const wob = Math.sin(time * 0.8 + q.s) * 0.07 * t;
+    mp[i * 3]     = nozzle.x + dir.x * dist + (up.x * q.dy + fwd.x * q.dz) * dist + wob;
+    mp[i * 3 + 1] = nozzle.y + dir.y * dist + (up.y * q.dy + fwd.y * q.dz) * dist + t * t * 0.35 + Math.cos(time * 0.7 + q.s) * 0.05 * t;
+    mp[i * 3 + 2] = nozzle.z + dir.z * dist + (up.z * q.dy + fwd.z * q.dz) * dist;
+    ma[i] = smooth(0, 0.06, t) * (1 - smooth(0.4, 1, t)) * 0.42 * q.al;
+    ms[i] = q.sz * (0.12 + t * 0.9);
+  }
+  if (mist.visible) mist.geometry.attributes.position.needsUpdate = mist.geometry.attributes.aAlpha.needsUpdate = mist.geometry.attributes.aSize.needsUpdate = true;
+
+  const dp = dust.geometry.attributes.position.array, da = dust.geometry.attributes.aAlpha.array, ds = dust.geometry.attributes.aSize.array;
+  for (let i = 0; i < DUST; i++) {
+    const q = dustSeed[i];
+    dp[i * 3] = q.x + Math.sin(time * 0.15 + q.s) * 0.4;
+    dp[i * 3 + 1] = ((q.y + time * 0.06 * (0.5 + q.sz) + 3.4) % 6.8) - 3.4;
+    dp[i * 3 + 2] = q.z;
+    da[i] = S.dust * (0.35 + 0.65 * Math.abs(Math.sin(time * 0.9 + q.s))) * 0.8;
+    ds[i] = q.sz * 0.16;
+  }
+  dust.geometry.attributes.position.needsUpdate = dust.geometry.attributes.aAlpha.needsUpdate = dust.geometry.attributes.aSize.needsUpdate = true;
+
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+frame();
+window.__S = S; window.__lenis = lenis;
+requestAnimationFrame(() => { document.body.classList.add("ready"); ScrollTrigger.refresh(); });
+</script>
+<noscript><style>.loader{display:none}.r{opacity:1;transform:none;filter:none}</style></noscript>
+</body>
+</html>
